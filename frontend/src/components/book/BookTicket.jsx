@@ -1,5 +1,7 @@
 import axios from "axios";
+import useRazorpay from "react-razorpay";
 import React from "react";
+import logo from "../../assets/img/logo.svg";
 
 export default function BookTicket(props) {
   const [ticketNo, setTicketNo] = React.useState("");
@@ -23,17 +25,67 @@ export default function BookTicket(props) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios
-      .post("http://localhost:5000/ticket/issueTicket", Ticket)
-      .then((res) => {
-        if (res.data.status === "success") {
-          setTicketNo(res.data.id);
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    if (
+      Ticket.Date !== "" &&
+      Ticket.Cinema_Hall !== "" &&
+      Ticket.NT !== ""
+    ) {
+      axios
+        .post("http://localhost:5000/ticket/issueTicket", Ticket)
+        .then((res) => {
+          if (res.data.status === "success") {
+            setTicketNo(res.data.id);
+            handlePayment(res.data.id);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } else {
+      alert("Please fill all the fields");
+    }
   };
+
+  const Razorpay = useRazorpay();
+
+  const handlePayment = React.useCallback(async () => {
+    const id = ticketNo;
+
+    const options = {
+      key: "rzp_test_vUctIod2Pv1rt1",
+      amount: 100,
+      currency: "INR",
+      name: "Book My Ticket",
+      description: "Movie Ticket Booking",
+      order_id: id,
+      image: logo,
+      handler: (res) => {
+        console.log(res);
+      },
+      prefill: {
+        name: props.user.name,
+        email: props.user.email,
+        contact: "9999999999",
+      },
+      notes: {
+        address: "Book My Ticket Office",
+        movie_name: Ticket.Movie,
+        date: Ticket.Date,
+      },
+      theme: {
+        color: "black",
+      },
+    };
+
+    const rzpay = new Razorpay(options);
+    rzpay.open();
+
+    // Dismiss handler on pay button click
+    document.getElementById("redesign-v15-cta").onclick = () => {
+      rzpay.close();
+    }
+
+  }, [Razorpay]);
 
   return (
     <div className="container mt-5">
@@ -85,11 +137,11 @@ export default function BookTicket(props) {
                   >
                     <option selected>Choose Cinema Hall</option>
                     <option value="Cinepolis, Janakpuri">
-                      Cinepolis, Janakpuri
+                      PVR
                     </option>
-                    <option value="PVR, Janakpuri">PVR, Janakpuri</option>
-                    <option value="IMAX Janakpuri">IMAX Janakpuri</option>
-                    <option value="INOX Janakpuri">INOX Janakpuri</option>
+                    <option value="PVR, Janakpuri">IMAX</option>
+                    <option value="IMAX Janakpuri">INOX</option>
+                    <option value="INOX Janakpuri">WS</option>
                   </select>
                 </div>
                 <div className="col-3">
