@@ -17,7 +17,7 @@ export default function Guest() {
         onClick={() => navigate("/register")}
         className="btn btn-warning"
       >
-        Register
+        New User
       </button>
     </div>
   );

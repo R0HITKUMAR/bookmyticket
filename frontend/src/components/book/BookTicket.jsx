@@ -1,9 +1,11 @@
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import useRazorpay from "react-razorpay";
 import React from "react";
 import logo from "../../assets/img/logo.svg";
 
 export default function BookTicket(props) {
+  const navigate = useNavigate();
   const [ticketNo, setTicketNo] = React.useState("");
   const [Ticket, setTicket] = React.useState({
     Movie: props.Movie.Series_Title,
@@ -23,8 +25,13 @@ export default function BookTicket(props) {
     });
   };
 
+  React.useEffect(() => {
+    if (!props.Movie.Series_Title) {
+      navigate("/");
+    }
+  }, [props]);
+
   const handleSubmit = (e) => {
-    e.preventDefault();
     if (
       Ticket.Date !== "" &&
       Ticket.Cinema_Hall !== "" &&
@@ -35,7 +42,8 @@ export default function BookTicket(props) {
         .then((res) => {
           if (res.data.status === "success") {
             setTicketNo(res.data.id);
-            handlePayment(res.data.id);
+            console.log(res.data);
+            handlePayment(res.data.id, Ticket.NT);
           }
         })
         .catch((err) => {
@@ -48,12 +56,15 @@ export default function BookTicket(props) {
 
   const Razorpay = useRazorpay();
 
-  const handlePayment = React.useCallback(async () => {
+  const handlePayment = React.useCallback(async (no, nt) => {
     const id = ticketNo;
+    const amount = nt + "00" + "00";
+
+    console.log(id, amount);
 
     const options = {
       key: "rzp_test_vUctIod2Pv1rt1",
-      amount: 100,
+      amount: amount,
       currency: "INR",
       name: "Book My Ticket",
       description: "Movie Ticket Booking",
@@ -76,6 +87,7 @@ export default function BookTicket(props) {
         color: "black",
       },
     };
+
 
     const rzpay = new Razorpay(options);
     rzpay.open();
@@ -136,12 +148,12 @@ export default function BookTicket(props) {
                     value={Ticket.Cinema_Hall}
                   >
                     <option selected>Choose Cinema Hall</option>
-                    <option value="Cinepolis, Janakpuri">
+                    <option value="PVR">
                       PVR
                     </option>
-                    <option value="PVR, Janakpuri">IMAX</option>
-                    <option value="IMAX Janakpuri">INOX</option>
-                    <option value="INOX Janakpuri">WS</option>
+                    <option value="IMAX">IMAX</option>
+                    <option value="INOX">INOX</option>
+                    <option value="WS">WS</option>
                   </select>
                 </div>
                 <div className="col-3">

@@ -26,11 +26,6 @@ export default function User(props) {
           </button>
         </li>
         <li>
-          <button className="dropdown-item" href="#">
-            Setting
-          </button>
-        </li>
-        <li>
           <hr className="dropdown-divider" />
         </li>
         <li>

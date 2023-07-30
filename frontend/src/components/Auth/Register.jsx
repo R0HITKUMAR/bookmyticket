@@ -9,7 +9,9 @@ export default function Register() {
   const [register, setRegister] = React.useState({
     email: "",
     password: "",
+    repassword: "",
     name: "",
+    mobile: "",
   });
 
   const handleChange = (e) => {
@@ -20,6 +22,15 @@ export default function Register() {
     }));
   };
 
+  const handleMobile = (e) => {
+    const { value } = e.target;
+    // Replace String with Regex
+    var numbers = value.replace(/\D/g, "")
+    if (value.length <= 10) {
+      setRegister({ ...register, mobile: numbers });
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (
@@ -28,15 +39,23 @@ export default function Register() {
       register.name !== ""
     ) {
       if (register.email.match(/^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i)) {
-        axios
-          .post("http://localhost:5000/auth/register", register)
-          .then((res) => {
-            setAlert(res.data.message);
-          })
-          .then((err) => {
-            setAlert(err.data.message);
-            console.log(err);
-          });
+        if (register.password === register.repassword) {
+          if (register.mobile.length === 10) {
+            axios
+              .post("http://localhost:5000/auth/register", register)
+              .then((res) => {
+                setAlert(res.data.message);
+              })
+              .then((err) => {
+                setAlert(err.data.message);
+                console.log(err);
+              });
+          } else {
+            setAlert("Invalid Mobile Number");
+          }
+        } else {
+          setAlert("Passwords do not match");
+        }
       } else {
         setAlert("Invalid Email");
       }
@@ -50,9 +69,10 @@ export default function Register() {
       className="form-signin text-center mt-5"
       style={{ overflow: "hidden" }}
     >
+      {JSON.stringify(register)}
       <form>
         <img className="mb-4" src={logo} alt="logo" height={50} />
-        <h3 className="h3 mb-3 fw-normal">Register Here</h3>
+        <h3 className="h3 mb-3 fw-normal">Create New User</h3>
         <div className="row">
           <div className="col-md-4 offset-4">
             <input
@@ -75,12 +95,30 @@ export default function Register() {
             />
             <br />
             <input
+              type="text"
+              name="mobile"
+              onChange={handleMobile}
+              value={register.mobile}
+              className="form-control"
+              placeholder="Mobile Number"
+            />
+            <br />
+            <input
               type="password"
               name="password"
               onChange={handleChange}
               value={register.password}
               className="form-control"
               placeholder="Password"
+            />
+            <br />
+            <input
+              type="password"
+              name="repassword"
+              onChange={handleChange}
+              value={register.repassword}
+              className="form-control"
+              placeholder="Re-enter Password"
             />
             <p className="mt-5" style={{ color: "red" }}>
               {alert}
